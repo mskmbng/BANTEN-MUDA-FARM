@@ -2073,12 +2073,14 @@ const frGuide=a=>a<5?8:a<20?6:a<50?4:a<100?3:a<250?2.5:2;
 /* Supabase Auth + penyimpanan data per akun */
 const SUPABASE_URL='https://bubqkcpforiluzuekuum.supabase.co';
 const SUPABASE_KEY='sb_publishable_sQLWgJ6AJhCMJZ9MxgTSsQ_qLNftNtN';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+// Gunakan URL website produksi agar tautan verifikasi tidak kembali ke localhost.
+const BMF_AUTH_REDIRECT_URL='https://mskmbng.github.io/BANTEN-MUDA-FARM/';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
 let currentUser=null,authMode='login',authReady=false;
 function banner(t,c){const b=$('#bn');if(b){b.textContent=t;b.className=c}}
 function authMessage(t){$('#authMsg').textContent=t||''}
 function showAuth(mode='login'){authMode=mode;$('#authGate').style.display='grid';$('#authTitle').textContent=mode==='login'?'Selamat datang kembali':'Buat akun BMF';$('#authSubtitle').textContent=mode==='login'?'Masuk untuk melanjutkan aktivitas pertanian terpadu Anda.':'Daftarkan akun untuk mengelola data budidaya Banten Muda Farm.';$('#authSubmit').textContent=mode==='login'?'Masuk ke Akun':'Daftar Akun';$('#authToggle').textContent=mode==='login'?'Belum punya akun? Daftar':'Sudah punya akun? Masuk';$('#authPassword').autocomplete=mode==='login'?'current-password':'new-password';authMessage('')}
-async function portalForgot(){const email=$('#authEmail').value.trim();if(!email){authMessage('Masukkan email akun terlebih dahulu untuk menerima tautan pemulihan.');$('#authEmail').focus();return}const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});authMessage(error?'Gagal mengirim tautan: '+error.message:'Tautan pemulihan password dikirim. Periksa email Anda.')}
+async function portalForgot(){const email=$('#authEmail').value.trim();if(!email){authMessage('Masukkan email akun terlebih dahulu untuk menerima tautan pemulihan.');$('#authEmail').focus();return}const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:BMF_AUTH_REDIRECT_URL});authMessage(error?'Gagal mengirim tautan: '+error.message:'Tautan pemulihan password dikirim. Periksa email Anda.')}
 $('#authToggle').addEventListener('click',()=>showAuth(authMode==='login'?'signup':'login'));
 $('#authForm').addEventListener('submit',async e=>{
  e.preventDefault();const email=$('#authEmail').value.trim(),password=$('#authPassword').value;
@@ -2090,7 +2092,7 @@ const {data,error}=await sb.auth.signUp(
     email,
     password,
     options: {
-      emailRedirectTo: window.location.origin + window.location.pathname
+      emailRedirectTo: BMF_AUTH_REDIRECT_URL
     }
   }
 );
@@ -2112,7 +2114,7 @@ const {data,error}=await sb.auth.signUp(
       type: 'signup',
       email: email,
       options: {
-        emailRedirectTo: window.location.origin + window.location.pathname
+        emailRedirectTo: BMF_AUTH_REDIRECT_URL
       }
     });
 
@@ -2845,7 +2847,7 @@ async function saveFarmProfile(event){
 async function resendFarmVerification(button){
  if(!currentUser?.email)return;
  const old=button.textContent;button.disabled=true;button.textContent='Mengirim...';
- const {error}=await sb.auth.resend({type:'signup',email:currentUser.email,options:{emailRedirectTo:window.location.origin+window.location.pathname}});
+ const {error}=await sb.auth.resend({type:'signup',email:currentUser.email,options:{emailRedirectTo:BMF_AUTH_REDIRECT_URL}});
  if(error){alert('Gagal mengirim email verifikasi: '+error.message);button.disabled=false;button.textContent=old;return}
  alert('Email verifikasi dikirim ulang. Periksa kotak masuk atau folder spam.');
  button.textContent='Email terkirim';
@@ -4117,7 +4119,7 @@ const ob=new MutationObserver(sync);[sb_,ti,tg].forEach(e=>ob.observe(e,{childLi
 sb_.addEventListener('click',()=>{});sync();
 document.getElementById('authGoogle').addEventListener('click',async function(){
  const msg=document.getElementById('authMsg');msg.textContent='';
- try{const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname}});if(error)throw error}
+ try{const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:BMF_AUTH_REDIRECT_URL}});if(error)throw error}
  catch(e){msg.textContent='Login Google belum bisa dipakai: '+(e&&e.message?e.message:e)}});
 })();
 </script>
