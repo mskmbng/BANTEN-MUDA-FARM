@@ -3000,9 +3000,10 @@ init();
 <script id="bmfVoiceScript">
 (()=>{
  const $v=id=>document.getElementById(id);
- const panel=$v('bmfVoicePanel'),fab=$v('bmfVoiceFab'),talk=$v('bmvTalk'),status=$v('bmvStatus'),dot=$v('bmvDot'),msgs=$v('bmvMessages'),text=$v('bmvText'),send=$v('bmvSend'),voiceSelect=$v('bmvVoiceSelect'),voicePreview=$v('bmvVoicePreview'),voiceHelp=$v('bmvVoiceHelp');
+ const panel=$v('bmfVoicePanel'),fab=$v('bmfVoiceFab'),talk=$v('bmvTalk'),status=$v('bmvStatus'),dot=$v('bmvDot'),msgs=$v('bmvMessages'),text=$v('bmvText'),send=$v('bmvSend');
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- let recognition=null,voiceActive=false,recognitionStarting=false,isSpeaking=false,busy=false,history=[],lastSpoken='',restartTimer=null;
+ let recognition=null,voiceActive=false,recognitionStarting=false,isSpeaking=false,busy=false,history=[],restartTimer=null;
+ let audioContext=null,activeSource=null,playbackToken=0;
  const setStatus=(s,live=false)=>{status.textContent=s;dot.classList.toggle('live',!!live)};
  function addMsg(who,txt){const empty=msgs.querySelector('.bmv-empty');if(empty)empty.remove();const d=document.createElement('div');d.className='bmv-msg '+who;d.textContent=txt;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;}
  function note(txt){addMsg('note',txt)}
@@ -3010,116 +3011,168 @@ init();
  function closePanel(){stopVoice(false);panel.classList.remove('open');fab.style.display='grid'}
  fab.addEventListener('click',openPanel);$v('bmvClose').addEventListener('click',closePanel);
  function farmSnapshot(){try{const d=typeof S!=='undefined'?S:{};const copy=v=>Array.isArray(v)?v.slice():[];return {waktu_snapshot:new Date().toLocaleString('id-ID'),kolam:copy(d.ponds),sampling_ikan:copy(d.samp),riwayat_pakan:copy(d.feed),penjualan:copy(d.sales),pemeriksaan_air:copy(d.water),pencatatan_hidroponik:copy(d.hidro),peternakan:d.ternak||{},pengaturan:d.cfg||{},catatan:'Snapshot catatan akun Banten Muda Farm. Data sensor hanya sesuai catatan yang tersimpan, bukan pembacaan langsung.'};}catch(e){return {catatan:'Data usaha belum dapat dibaca dari halaman ini.'}}}
- let activeAudio=null,activeAudioUrl=null;
- const ELEVENLABS_VOICE_ID='cgSgspJ2msm6clMCkdW9';
- function stopSpeaking(){
-  isSpeaking=false;
-  try{if(activeAudio){activeAudio.pause();activeAudio.src='';activeAudio=null}}catch{}
-  if(activeAudioUrl){URL.revokeObjectURL(activeAudioUrl);activeAudioUrl=null}
+
+ // AudioContext dibuka langsung dari sentuhan pengguna. Ini menghindari
+ // penolakan autoplay yang sering terjadi pada Safari/iOS dan browser tertanam.
+ function unlockAudio(){
+  const Ctx=window.AudioContext||window.webkitAudioContext;
+  if(!Ctx)throw new Error('Browser tidak mendukung Web Audio. Buka website melalui Safari atau Chrome terbaru.');
+  if(!audioContext)audioContext=new Ctx();
+  if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+  return audioContext;
  }
+ function stopSpeaking(){
+  playbackToken++;
+  isSpeaking=false;
+  try{if(activeSource){activeSource.onended=null;activeSource.stop(0);activeSource.disconnect();activeSource=null}}catch{}
+ }
+ const ELEVENLABS_VOICE_ID='cgSgspJ2msm6clMCkdW9';
  async function playElevenLabs(textToSpeak){
   if(!voiceActive||!textToSpeak)return false;
-  clearTimeout(restartTimer);
-  try{if(recognition)recognition.stop()}catch{} recognitionStarting=false;
-  stopSpeaking();isSpeaking=true;
+  const token=++playbackToken;
+  stopSpeaking();
+  const myToken=playbackToken;
+  isSpeaking=true;
   setStatus('BMF-AI menyiapkan suara…',true);
   try{
    if(typeof sb==='undefined'||!sb?.auth)throw new Error('Koneksi Supabase belum siap. Muat ulang halaman dan coba lagi.');
-   // Ambil token sesi agar endpoint dipanggil dengan autentikasi yang benar.
+   const ctx=unlockAudio();
+   if(ctx.state==='suspended')await ctx.resume();
    const {data:sessionData,error:sessionError}=await sb.auth.getSession();
    if(sessionError)throw new Error('Gagal membaca sesi login Supabase: '+sessionError.message);
    const accessToken=sessionData?.session?.access_token;
    if(!accessToken)throw new Error('Sesi login tidak ditemukan. Silakan keluar lalu masuk kembali ke Banten Muda Farm.');
    const response=await fetch(SUPABASE_URL+'/functions/v1/bmf-ai-voice',{
     method:'POST',
-    headers:{
-     'Content-Type':'application/json',
-     'apikey':SUPABASE_KEY,
-     'Authorization':'Bearer '+accessToken,
-     'Accept':'audio/mpeg'
-    },
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+accessToken,'Accept':'audio/mpeg'},
     body:JSON.stringify({text:textToSpeak})
    });
    if(!response.ok){
-    const rawError=await response.text();
-    let detail=rawError;
+    const rawError=await response.text();let detail=rawError;
     try{const parsed=JSON.parse(rawError);detail=parsed.error||parsed.message||rawError}catch{}
     throw new Error('Layanan suara gagal (HTTP '+response.status+'): '+detail);
    }
    const contentType=(response.headers.get('content-type')||'').toLowerCase();
-   if(!contentType.includes('audio/')) {
-    const raw=await response.text();
-    let detail=raw;
+   if(!contentType.includes('audio/')){
+    const raw=await response.text();let detail=raw;
     try{const parsed=JSON.parse(raw);detail=parsed.error||parsed.message||raw}catch{}
     throw new Error('Supabase tidak mengirim audio (Content-Type: '+(contentType||'tidak diketahui')+'). '+detail);
    }
-   const audioBytes=await response.arrayBuffer();
-   if(!audioBytes.byteLength)throw new Error('File audio kosong. Periksa Secret ELEVENLABS_API_KEY dan log Edge Function.');
-   const audioBlob=new Blob([audioBytes],{type:contentType||'audio/mpeg'});
-   activeAudioUrl=URL.createObjectURL(audioBlob);
-   const audio=new Audio(activeAudioUrl);
-   activeAudio=audio;
-   audio.preload='auto';
-   audio.onplay=()=>setStatus('BMF-AI sedang berbicara',true);
-   const finished=new Promise((resolve,reject)=>{
-    audio.onended=()=>resolve(true);
-    audio.onerror=()=>reject(new Error('Audio diterima, tetapi gagal diputar oleh browser.'));
-   });
-   await audio.play();
-   await finished;
-   if(activeAudio===audio){activeAudio=null;audio.removeAttribute('src');audio.load()}
-   if(activeAudioUrl){URL.revokeObjectURL(activeAudioUrl);activeAudioUrl=null}
-   isSpeaking=false;
-   if(voiceActive){setStatus('Mendengarkan · silakan bicara',true);clearTimeout(restartTimer);restartTimer=setTimeout(startRecognition,500)}
+   const bytes=await response.arrayBuffer();
+   if(!bytes.byteLength)throw new Error('File audio kosong. Periksa Secret ELEVENLABS_API_KEY dan log Edge Function.');
+   if(!voiceActive||myToken!==playbackToken)return false;
+   const decoded=await ctx.decodeAudioData(bytes.slice(0));
+   if(!voiceActive||myToken!==playbackToken)return false;
+   const source=ctx.createBufferSource();
+   source.buffer=decoded;source.connect(ctx.destination);activeSource=source;
+   source.onended=()=>{
+    if(activeSource===source){activeSource=null;try{source.disconnect()}catch{}}
+    if(myToken===playbackToken&&voiceActive){
+     isSpeaking=false;
+     setStatus('Mendengarkan · silakan bicara',true);
+     clearTimeout(restartTimer);restartTimer=setTimeout(startRecognition,250);
+    }
+   };
+   setStatus('BMF-AI sedang berbicara · Anda bisa menyela',true);
+   // Tetap aktifkan pengenalan suara selama AI berbicara agar pengguna dapat menyela.
+   if(voiceActive)startRecognition();
+   source.start(0);
    return true;
   }catch(e){
+   if(myToken!==playbackToken)return false;
    console.error('BMF-AI ElevenLabs:',e);
-   if(activeAudio){try{activeAudio.pause();activeAudio.removeAttribute('src');activeAudio.load()}catch{} activeAudio=null}
-   if(activeAudioUrl){URL.revokeObjectURL(activeAudioUrl);activeAudioUrl=null}
-   isSpeaking=false;
-   if(voiceActive){setStatus('Suara bermasalah · periksa layanan');clearTimeout(restartTimer);restartTimer=setTimeout(startRecognition,600)}
+   stopSpeaking();
+   if(voiceActive){setStatus('Suara bermasalah · periksa layanan');clearTimeout(restartTimer);restartTimer=setTimeout(startRecognition,700)}
    note('BMF-AI belum bisa mengeluarkan suara: '+(e.message||'Terjadi kesalahan')+'. Pastikan Edge Function bmf-ai-voice aktif dan Secret ELEVENLABS_API_KEY tersedia di Supabase.');
    return false;
   }
  }
  function speakAnswer(answer){return playElevenLabs(answer)}
- if(voiceSelect){
-  voiceSelect.innerHTML='<option value="elevenlabs">Suara BMF-AI · ElevenLabs</option>';
-  voiceSelect.value='elevenlabs';
-  voiceSelect.disabled=true;
+ async function askAI(question){
+  if(busy){note('BMF-AI masih memproses pertanyaan sebelumnya. Coba sebentar lagi.');return}
+  busy=true;setStatus('BMF-AI sedang berpikir…',true);
+  try{
+   const {data,error}=await sb.functions.invoke('bmf-ai-gemini',{body:{question,farmData:farmSnapshot(),history:history.slice(-10)}});
+   if(error)throw new Error(error.message||'Gagal menghubungi layanan Gemini');
+   if(data?.error)throw new Error(data.error);
+   const answer=(data?.answer||'Maaf, saya belum mendapatkan jawaban.').trim();
+   history.push({role:'user',text:question},{role:'model',text:answer});history=history.slice(-12);
+   addMsg('ai',answer);
+   if(voiceActive)speakAnswer(answer);else setStatus('Jawaban diterima · siap membantu');
+  }catch(err){
+   console.error('BMF-AI Gemini:',err);
+   note('BMF-AI belum bisa menjawab: '+(err.message||'Terjadi kesalahan')+'. Periksa Edge Function bmf-ai-gemini dan Secret GEMINI_API_KEY.');
+   setStatus('Ada kendala · periksa koneksi');
+  }finally{busy=false}
  }
- if(voiceHelp)voiceHelp.textContent='Suara natural ElevenLabs · Voice ID BMF-AI telah dipilih.';
- if(voicePreview){
-  voicePreview.addEventListener('click',async()=>{
-   const previewText='Halo! Saya BMF-AI dari Banten Muda Farm. Senang bisa membantu kegiatan pertanian dan budidaya ikan Anda.';
-   if(voicePreview.disabled)return;
-   voicePreview.disabled=true;
-   const oldLabel=voicePreview.textContent;
-   voicePreview.textContent='Memuat suara…';
-   const wasActive=voiceActive;
-   if(!wasActive)voiceActive=true;
-   try{await playElevenLabs(previewText)}
-   finally{
-    if(!wasActive){voiceActive=false;clearTimeout(restartTimer);try{if(recognition)recognition.stop()}catch{};setStatus('Pratinjau suara selesai')}
-    voicePreview.disabled=false;
-    voicePreview.textContent=oldLabel||'▶ Coba';
+ function startRecognition(){
+  if(!voiceActive||!recognition||recognitionStarting||isSpeaking&&recognitionStarting)return;
+  try{recognitionStarting=true;recognition.start()}
+  catch(e){recognitionStarting=false;if(e.name!=='InvalidStateError')console.warn('BMF-AI microphone:',e)}
+ }
+ function setupRecognition(){
+  if(!SR){note('Browser ini tidak menyediakan Speech Recognition. Coba buka melalui Safari/Chrome terbaru atau gunakan kolom ketik.');return false}
+  recognition=new SR();recognition.lang='id-ID';recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=1;
+  recognition.onstart=()=>{recognitionStarting=false;if(voiceActive&&!isSpeaking)setStatus('Mendengarkan · silakan bicara',true)};
+  recognition.onspeechstart=()=>{
+   if(isSpeaking){
+    stopSpeaking();
+    setStatus('Mendengarkan · BMF-AI berhenti, silakan lanjutkan',true);
    }
-  });
+  };
+  recognition.onresult=e=>{
+   let finalText='';
+   for(let i=e.resultIndex;i<e.results.length;i++){
+    const transcript=e.results[i][0]?.transcript||'';
+    if(e.results[i].isFinal)finalText+=transcript+' ';
+   }
+   finalText=finalText.trim();
+   if(finalText){
+    if(isSpeaking)stopSpeaking();
+    addMsg('user',finalText);
+    askAI(finalText);
+   }
+  };
+  recognition.onerror=e=>{
+   recognitionStarting=false;
+   if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+    voiceActive=false;stopSpeaking();talk.classList.remove('stop');talk.textContent='🎙️ Mulai percakapan suara';
+    setStatus('Izin mikrofon ditolak');note('Izin mikrofon ditolak. Buka pengaturan situs browser, izinkan mikrofon, lalu muat ulang halaman.');
+   }else if(e.error!=='no-speech'&&e.error!=='aborted')setStatus('Gangguan mikrofon: '+e.error);
+  };
+  recognition.onend=()=>{
+   recognitionStarting=false;
+   if(voiceActive){clearTimeout(restartTimer);restartTimer=setTimeout(startRecognition,350)}
+  };
+  return true;
  }
- async function askAI(question){if(busy){note('BMF-AI masih memproses pertanyaan sebelumnya. Coba sebentar lagi.');return}busy=true;setStatus('BMF-AI sedang berpikir…',true);try{const {data,error}=await sb.functions.invoke('bmf-ai-gemini',{body:{question,farmData:farmSnapshot(),history:history.slice(-10)}});if(error)throw new Error(error.message||'Gagal menghubungi layanan Gemini');if(data?.error)throw new Error(data.error);const answer=(data?.answer||'Maaf, saya belum mendapatkan jawaban.').trim();history.push({role:'user',text:question},{role:'model',text:answer});history=history.slice(-12);addMsg('ai',answer);if(voiceActive)speakAnswer(answer);else setStatus('Jawaban diterima · siap membantu');}catch(err){console.error('BMF-AI Gemini:',err);note('BMF-AI belum bisa menjawab: '+(err.message||'Terjadi kesalahan')+'. Periksa Edge Function bmf-ai-gemini dan Secret GEMINI_API_KEY.');setStatus('Ada kendala · periksa koneksi');}finally{busy=false}}
- function startRecognition(){if(!voiceActive||!recognition||recognitionStarting)return;try{recognitionStarting=true;recognition.start()}catch(e){recognitionStarting=false;if(e.name!=='InvalidStateError')note('Mikrofon tidak dapat dimulai: '+e.message)}}
- function setupRecognition(){if(!SR){note('Browser ini belum mendukung pengenalan suara. Gunakan Chrome atau Edge terbaru, atau ketik pertanyaan.');return false}recognition=new SR();recognition.lang='id-ID';recognition.continuous=true;recognition.interimResults=false;recognition.maxAlternatives=1;
-  recognition.onstart=()=>{recognitionStarting=false;if(voiceActive)setStatus('Mendengarkan · silakan bicara',true)};
-  recognition.onspeechstart=()=>{};
-  recognition.onresult=e=>{let finalText='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalText+=e.results[i][0].transcript+' '}finalText=finalText.trim();if(finalText){addMsg('user',finalText);askAI(finalText)}};
-  recognition.onerror=e=>{recognitionStarting=false;if(e.error==='not-allowed'||e.error==='service-not-allowed'){voiceActive=false;talk.classList.remove('stop');talk.textContent='🎙️ Mulai percakapan suara';setStatus('Izin mikrofon ditolak');note('Izinkan akses mikrofon pada pengaturan situs browser.');}else if(e.error!=='no-speech'&&e.error!=='aborted')setStatus('Gangguan mikrofon: '+e.error)};
-  recognition.onend=()=>{recognitionStarting=false;if(voiceActive&&!isSpeaking){clearTimeout(restartTimer);restartTimer=setTimeout(startRecognition,450)}};return true}
- async function startVoice(){if(voiceActive){stopVoice(true);return}if(typeof currentUser==='undefined'||!currentUser){note('Silakan login terlebih dahulu agar BMF-AI dapat membaca data akun Anda.');return}if(!window.Audio){note('Browser belum mendukung pemutaran audio. Gunakan Chrome atau Edge terbaru.');return}if(!setupRecognition())return;voiceActive=true;talk.classList.add('stop');talk.innerHTML='■ Akhiri percakapan suara';setStatus('Meminta izin mikrofon…');try{startRecognition();}catch(e){voiceActive=false;note('Tidak dapat mengaktifkan mikrofon: '+e.message)}}
- function stopVoice(show=true){voiceActive=false;clearTimeout(restartTimer);try{if(recognition)recognition.stop()}catch{}recognition=null;recognitionStarting=false;stopSpeaking();talk.classList.remove('stop');talk.innerHTML='🎙️ Mulai percakapan suara';setStatus('Percakapan selesai · mikrofon tidak aktif');if(show)note('Percakapan suara telah diakhiri.')}
+ async function startVoice(){
+  if(voiceActive){stopVoice(true);return}
+  if(typeof currentUser==='undefined'||!currentUser){note('Silakan login terlebih dahulu agar BMF-AI dapat membaca data akun Anda.');return}
+  if(!setupRecognition())return;
+  try{unlockAudio()}catch(e){note(e.message);return}
+  voiceActive=true;talk.classList.add('stop');talk.innerHTML='■ Akhiri percakapan suara';
+  setStatus('Meminta izin mikrofon…',true);
+  startRecognition();
+ }
+ function stopVoice(show=true){
+  voiceActive=false;clearTimeout(restartTimer);stopSpeaking();
+  try{if(recognition)recognition.stop()}catch{}
+  recognition=null;recognitionStarting=false;
+  talk.classList.remove('stop');talk.innerHTML='🎙️ Mulai percakapan suara';
+  setStatus('Percakapan selesai · mikrofon tidak aktif');
+  if(show)note('Percakapan suara telah diakhiri.');
+ }
  talk.addEventListener('click',startVoice);
- async function sendText(){const q=text.value.trim();if(!q)return;if(typeof currentUser==='undefined'||!currentUser){note('Silakan login terlebih dahulu.');return}text.value='';addMsg('user',q);await askAI(q)}
- send.addEventListener('click',sendText);text.addEventListener('keydown',e=>{if(e.key==='Enter')sendText()});
- window.bmfVoiceStop=()=>stopVoice(false);window.addEventListener('pagehide',()=>stopVoice(false));
+ async function sendText(){
+  const q=text.value.trim();if(!q)return;
+  if(typeof currentUser==='undefined'||!currentUser){note('Silakan login terlebih dahulu.');return}
+  text.value='';addMsg('user',q);await askAI(q);
+ }
+ send.addEventListener('click',sendText);
+ text.addEventListener('keydown',e=>{if(e.key==='Enter')sendText()});
+ window.bmfVoiceStop=()=>stopVoice(false);
+ window.addEventListener('pagehide',()=>stopVoice(false));
  if(typeof sb!=='undefined'&&sb.auth)sb.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')stopVoice(false)});
 })();
 </script>
