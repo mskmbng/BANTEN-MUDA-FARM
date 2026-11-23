@@ -1,0 +1,14 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "smart farming",
+  "orientation": "any",
+  "scope": "/BANTEN-MUDA-FARM/",
+  "short_name": "SMART FARMING",
+  "start_url": "/BANTEN-MUDA-FARM/",
+  "theme_color": "#16a34a",
+  "id": "com.smartfarming.app",
+  "description": "Platform digital pertanian cerdas dan terpadu untuk mendukung ketahanan pangan Indonesia.",
+  "lang": "id"
+}
