@@ -10,5 +10,12 @@
   "theme_color": "#16a34a",
   "id": "com.smartfarming.app",
   "description": "Platform digital pertanian cerdas dan terpadu untuk mendukung ketahanan pangan Indonesia.",
-  "lang": "id"
-}
+  "lang": "id",
+"icons": [
+  {
+    "src": "/BANTEN-MUDA-FARM/icon-512.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any maskable"
+  }
+]
