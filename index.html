@@ -4305,7 +4305,7 @@ document.getElementById('authGoogle').addEventListener('click',async function(){
 </style>
 <script id="bmf-web-push-setup">
 // BMF Web Push: pendaftaran perangkat setelah pengguna login.
-const BMF_VAPID_PUBLIC_KEY = 'BI2KtPh7YA2it9xOKUNQN71e1TDvpBiVO54jkyM_6f8eM0Llv7GBL3JkOciNQQOuMUiBUXnw0hVlT6YnGPnBG-w';
+const BMF_VAPID_PUBLIC_KEY = 'BDg4uAnCijQ4-xeyS5fE1JDQXSZbL2eEry0R0oo1yb66dKOxssUeo7JSWgNuYGoXbkbmrm18nr0hw5Bi-5DMG6w';
 let bmfPushButton = null;
 
 function bmfUrlBase64ToUint8Array(base64String) {
@@ -4345,10 +4345,26 @@ async function bmfEnablePush() {
     const registration = await navigator.serviceWorker.register('/BANTEN-MUDA-FARM/sw.js', { scope: '/BANTEN-MUDA-FARM/' });
     await navigator.serviceWorker.ready;
     let subscription = await registration.pushManager.getSubscription();
+    const expectedApplicationServerKey = bmfUrlBase64ToUint8Array(BMF_VAPID_PUBLIC_KEY);
+
+    // Jika perangkat masih menyimpan subscription dengan VAPID Public Key lama,
+    // lepaskan subscription tersebut lalu buat yang baru dengan key terbaru.
+    if (subscription) {
+      const existingKey = subscription.options && subscription.options.applicationServerKey;
+      const sameKey = existingKey &&
+        existingKey.byteLength === expectedApplicationServerKey.byteLength &&
+        expectedApplicationServerKey.every((value, index) => value === new Uint8Array(existingKey)[index]);
+
+      if (!sameKey) {
+        await subscription.unsubscribe();
+        subscription = null;
+      }
+    }
+
     if (!subscription) {
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: bmfUrlBase64ToUint8Array(BMF_VAPID_PUBLIC_KEY)
+        applicationServerKey: expectedApplicationServerKey
       });
     }
 
