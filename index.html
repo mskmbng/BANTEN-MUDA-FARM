@@ -847,7 +847,7 @@ button,input,select,textarea{max-width:100%;font:inherit}
   .ft1 span{display:none}
 }
 
-</style>
+\n.h-history-tools{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:10px 0 14px}.h-history-tools label{min-width:220px;flex:1}.h-history-tools button{margin:0;min-height:42px}.h-history-row .mu{line-height:1.7;margin-top:3px}@media(max-width:560px){.h-history-tools{align-items:stretch;flex-direction:column}.h-history-tools button{width:100%}.h-history-row{gap:8px}.h-history-row .mu{font-size:11px}}\n</style>
 <style id="bmf-professional-v3">
 /* BMF PROFESSIONAL PORTAL — refined visual system */
 #authGate.bmf-login-v2{background:#edf3ee;padding:clamp(14px,2.4vw,34px);color:#173426;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif}
@@ -2334,9 +2334,34 @@ function hForm(){return `<div class="card" id="hform"><h2>${ic(IC.edit)}Catat Pa
  <div><label>Instalasi / Bedeng<input name="unit" list="dlu" placeholder="Pakcoy NFT 1" required value="${esc(hu)}"></label><datalist id="dlu">${hUnits().map(u=>`<option value="${esc(u)}">`).join('')}</datalist></div>
  ${inp('Tanggal','tgl','date',`value="${today()}"`)}<div><label>Jenis tanaman<input name="tanam" list="dlc" placeholder="Pakcoy"></label><datalist id="dlc">${['Pakcoy','Selada','Kangkung','Sawi','Bayam','Seledri'].map(u=>`<option value="${u}">`).join('')}</datalist></div>
  ${inp('pH','ph','number','step="any"')}${inp('TDS (ppm)','tds','number','step="any"')}<div><label>EC (mS/cm)<input name="ec" type="number" step="any"></label></div>${inp('Suhu air (\u00b0C)','suhu','number','step="any"')}</div><button class="p">Simpan Data</button></form></div>`}
+function hDeleteRecord(id){
+ if(ro)return;
+ if(!confirm('Hapus catatan hidroponik ini? Data akan dihapus dari akun cloud.'))return;
+ S.hidro=(S.hidro||[]).filter(x=>String(x.id)!==String(id));
+ save().then(()=>render()).catch(()=>{});
+}
+function hDeleteOlder(){
+ if(ro)return;
+ const el=document.getElementById('hHistoryBefore'),cutoff=el&&el.value;
+ if(!cutoff){alert('Pilih tanggal batas terlebih dahulu.');return}
+ const matches=(S.hidro||[]).filter(x=>x.tgl&&x.tgl<cutoff);
+ if(!matches.length){alert('Tidak ada riwayat sebelum tanggal tersebut.');return}
+ if(!confirm(`Hapus ${matches.length} catatan sebelum ${fd(cutoff)}? Data yang dihapus tidak dapat dipulihkan.`))return;
+ const ids=new Set(matches.map(x=>String(x.id)));
+ S.hidro=(S.hidro||[]).filter(x=>!ids.has(String(x.id)));
+ save().then(()=>render()).catch(()=>{});
+}
+function hHistory(){
+ const rows=[...(S.hidro||[])].sort((a,b)=>String(b.tgl||'').localeCompare(String(a.tgl||'')));
+ return `<div class="card h-history"><div class="hrow"><h2>Riwayat Pencatatan Hidroponik</h2><span class="bx ok">${rows.length} catatan</span></div>
+ <div class="h-history-tools"><label>Hapus catatan sebelum tanggal<input id="hHistoryBefore" type="date"></label><button type="button" class="x" onclick="hDeleteOlder()">Hapus Riwayat Lama</button></div>
+ ${rows.length?rows.map(x=>`<div class="row h-history-row"><div><b>${esc(x.unit||'Instalasi')}</b> · ${esc(x.tgl||'-')}<div class="mu">${esc(x.tanam||'')} · pH ${hv('ph',x.ph)} · TDS ${hv('tds',x.tds)} ppm · EC ${hv('ec',x.ec)} mS/cm · Suhu ${hv('suhu',x.suhu)} °C</div></div><button type="button" class="x" onclick="hDeleteRecord('${String(x.id).replace(/'/g,'&#39;')}')">Hapus</button></div>`).join(''):'<div class="mu">Belum ada riwayat pencatatan.</div>'}
+ <div class="mu" style="margin-top:8px">Penghapusan tersimpan ke akun kamu dan akan memengaruhi grafik serta ringkasan kualitas air.</div></div>`;
+}
 function hAir(){const c=hCur(),us=hUnits(),k=ch.hp,ser=us.map((u,i)=>({n:u,c:PAL[i%6],pts:S.hidro.filter(x=>x.unit===u&&x[k]!=null&&x[k]!==''&&days(x.tgl)<hd).map(x=>[x.tgl,+x[k]])}));
- const cc=`<div class="card"><div class="hrow"><h2>${ic(IC.bars)}Grafik Kualitas Air Hidroponik</h2></div><div class="hrow">${chips(Object.keys(HP).map(q=>[q,HP[q].n+(HP[q].u?' ('+HP[q].u.trim()+')':'')]),k,'setHp')}<select onchange="setHd(this.value)">${[[7,'7 Hari'],[14,'14 Hari'],[30,'30 Hari'],[9999,'Semua']].map(x=>`<option value="${x[0]}"${x[0]===hd?' selected':''}>Periode: ${x[1]}</option>`).join('')}</select></div>${chart(ser,{band:HB[k],leg:1,tip:HP[k].n,fmt:v=>hv(k,v)})}<div class="hfoot"><span><i class="sw"></i>Rentang ideal ${HP[k].n} (${rng(k)})</span><span>\u24d8 Area berwarna = rentang ideal (acuan umum sayuran daun)</span></div></div>`;
- return `<div class="hg2">${cc}${hStatus(c)}</div>${us.length>1?`<div class="hrow"><span class="mu">Menampilkan status instalasi</span><select onchange="setHu(this.value)">${us.map(u=>`<option${u===hu?' selected':''}>${esc(u)}</option>`).join('')}</select></div>`:''}${hCards(c)}<div class="hg3" style="margin-top:14px">${hForm()}${hNotif()}</div>`}
+ const cc=`<div class="card"><div class="hrow"><h2>${ic(IC.bars)}Grafik Kualitas Air Hidroponik</h2></div><div class="hrow">${chips(Object.keys(HP).map(q=>[q,HP[q].n+(HP[q].u?' ('+HP[q].u.trim()+')':'')]),k,'setHp')}<select onchange="setHd(this.value)">${[[7,'7 Hari'],[14,'14 Hari'],[30,'30 Hari'],[9999,'Semua']].map(x=>`<option value="${x[0]}"${x[0]===hd?' selected':''}>Periode: ${x[1]}</option>`).join('')}</select></div>${chart(ser,{band:HB[k],leg:1,tip:HP[k].n,fmt:v=>hv(k,v)})}<div class="hfoot"><span><i class="sw"></i>Rentang ideal ${HP[k].n} (${rng(k)})</span><span>ⓘ Area berwarna = rentang ideal (acuan umum sayuran daun)</span></div></div>`;
+ return `<div class="hg2">${cc}${hStatus(c)}</div>${us.length>1?`<div class="hrow"><span class="mu">Menampilkan status instalasi</span><select onchange="setHu(this.value)">${us.map(u=>`<option${u===hu?' selected':''}>${esc(u)}</option>`).join('')}</select></div>`:''}${hCards(c)}<div class="hg3" style="margin-top:14px">${hForm()}${hNotif()}</div>${hHistory()}`;
+}
 function hNut(){return `<div class="hg2"><div class="card sc"><h2>Acuan EC / PPM per tanaman</h2><table><tr><th>Tanaman</th><th>EC (mS/cm)</th><th>PPM (skala 700)</th></tr>${CROPS.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table><div class="mu" style="margin-top:8px">Acuan umum; sesuaikan dengan petunjuk produk nutrisi dan fase pertumbuhan.</div></div>
  <div class="card"><h2>Konversi EC \u2194 PPM</h2><div class="g"><div><label>EC (mS/cm)<input type="number" step="any" value="${hk.ec}" oninput="hk.ec=+this.value;hkUpd()"></label></div><div><label>Skala<select onchange="hk.sc=+this.value;hkUpd()">${[500,640,700].map(v=>`<option${v===hk.sc?' selected':''}>${v}</option>`).join('')}</select></label></div></div><div class="res" id="hkC"></div><div class="mu" style="margin-top:8px">PPM = EC \u00d7 skala. Skala meter TDS berbeda-beda (500, 640, atau 700).</div></div></div>`}
 function hKal(){const i=(l,k)=>`<div><label>${l}<input type="number" step="any" value="${hk[k]}" oninput="hk.${k}=+this.value;hkUpd()"></label></div>`;
@@ -4303,94 +4328,5 @@ document.getElementById('authGoogle').addEventListener('click',async function(){
 .bh .bh-notif li{background:var(--bg)}
 
 </style>
-<script id="bmf-web-push-setup">
-// BMF Web Push: pendaftaran perangkat setelah pengguna login.
-const BMF_VAPID_PUBLIC_KEY = 'BDg4uAnCijQ4-xeyS5fE1JDQXSZbL2eEry0R0oo1yb66dKOxssUeo7JSWgNuYGoXbkbmrm18nr0hw5Bi-5DMG6w';
-let bmfPushButton = null;
 
-function bmfUrlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const raw = atob(base64);
-  return Uint8Array.from([...raw].map(char => char.charCodeAt(0)));
-}
-
-function bmfShowPushButton() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
-  if (bmfPushButton) return;
-  bmfPushButton = document.createElement('button');
-  bmfPushButton.type = 'button';
-  bmfPushButton.textContent = '🔔 Aktifkan Notifikasi BMF';
-  bmfPushButton.setAttribute('aria-label', 'Aktifkan notifikasi Banten Muda Farm');
-  bmfPushButton.style.cssText = 'position:fixed;z-index:99999;right:18px;bottom:92px;padding:12px 16px;border:0;border-radius:999px;background:#147a43;color:#fff;font:700 13px system-ui;box-shadow:0 5px 20px #0003;cursor:pointer;';
-  bmfPushButton.addEventListener('click', bmfEnablePush);
-  document.body.appendChild(bmfPushButton);
-  if (Notification.permission === 'granted') bmfPushButton.textContent = '🔔 Aktifkan Notifikasi BMF';
-}
-
-async function bmfEnablePush() {
-  if (!currentUser) { alert('Silakan login terlebih dahulu.'); return; }
-  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
-    alert('Browser ini belum mendukung Web Push. Gunakan Chrome/Edge terbaru atau instal BMF ke layar utama pada iPhone.');
-    return;
-  }
-  const button = bmfPushButton;
-  if (button) { button.disabled = true; button.textContent = 'Mengaktifkan...'; }
-  try {
-    const permission = Notification.permission === 'granted'
-      ? 'granted'
-      : await Notification.requestPermission();
-    if (permission !== 'granted') throw new Error('Izin notifikasi belum diberikan. Izinkan notifikasi untuk situs BMF pada pengaturan browser.');
-
-    const registration = await navigator.serviceWorker.register('/BANTEN-MUDA-FARM/sw.js', { scope: '/BANTEN-MUDA-FARM/' });
-    await navigator.serviceWorker.ready;
-    let subscription = await registration.pushManager.getSubscription();
-    const expectedApplicationServerKey = bmfUrlBase64ToUint8Array(BMF_VAPID_PUBLIC_KEY);
-
-    // Jika perangkat masih menyimpan subscription dengan VAPID Public Key lama,
-    // lepaskan subscription tersebut lalu buat yang baru dengan key terbaru.
-    if (subscription) {
-      const existingKey = subscription.options && subscription.options.applicationServerKey;
-      const sameKey = existingKey &&
-        existingKey.byteLength === expectedApplicationServerKey.byteLength &&
-        expectedApplicationServerKey.every((value, index) => value === new Uint8Array(existingKey)[index]);
-
-      if (!sameKey) {
-        await subscription.unsubscribe();
-        subscription = null;
-      }
-    }
-
-    if (!subscription) {
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: expectedApplicationServerKey
-      });
-    }
-
-    const { error } = await sb.from('push_subscriptions').upsert({
-      user_id: currentUser.id,
-      endpoint: subscription.endpoint,
-      subscription: subscription.toJSON(),
-      platform: /iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'ios' : /Android/i.test(navigator.userAgent) ? 'android' : 'web',
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'endpoint' });
-    if (error) throw error;
-
-    if (button) {
-      button.textContent = '✓ Notifikasi BMF Aktif';
-      button.style.background = '#166534';
-      button.disabled = true;
-      button.removeEventListener('click', bmfEnablePush);
-    }
-    alert('Berhasil! Perangkat ini sudah terdaftar untuk menerima notifikasi Banten Muda Farm.');
-  } catch (error) {
-    console.error('BMF Web Push:', error);
-    if (button) { button.disabled = false; button.textContent = '🔔 Coba Aktifkan Lagi'; }
-    alert('Notifikasi belum berhasil diaktifkan: ' + (error.message || 'Terjadi kesalahan'));
-  }
-}
-
-// Dipanggil setelah data akun berhasil dimuat.
-</script>
 </body></html>
