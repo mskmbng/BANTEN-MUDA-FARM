@@ -30,3 +30,58 @@ self.addEventListener('fetch', event => {
     })));
   }
 });
+
+// ======================================
+// BMF PUSH NOTIFICATION
+// ======================================
+
+self.addEventListener('push', event => {
+  let data = {
+    title: 'Banten Muda Farm',
+    body: 'Ada informasi terbaru dari BMF.',
+    url: '/BANTEN-MUDA-FARM/'
+  };
+
+  if (event.data) {
+    try {
+      data = { ...data, ...event.data.json() };
+    } catch (error) {
+      data.body = event.data.text();
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/BANTEN-MUDA-FARM/icon-192.png',
+      badge: '/BANTEN-MUDA-FARM/icon-192.png',
+      data: {
+        url: data.url || '/BANTEN-MUDA-FARM/'
+      }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+
+  const targetUrl = new URL(
+    event.notification.data?.url || '/BANTEN-MUDA-FARM/',
+    self.location.origin
+  ).href;
+
+  event.waitUntil(
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then(windowClients => {
+      for (const client of windowClients) {
+        if (client.url.startsWith(self.location.origin)) {
+          return client.focus();
+        }
+      }
+
+      return clients.openWindow(targetUrl);
+    })
+  );
+});
