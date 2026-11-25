@@ -849,7 +849,75 @@ button,input,select,textarea{max-width:100%;font:inherit}
   .ft1 span{display:none}
 }
 
-\n.h-history-tools{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:10px 0 14px}.h-history-tools label{min-width:220px;flex:1}.h-history-tools button{margin:0;min-height:42px}.h-history-row .mu{line-height:1.7;margin-top:3px}@media(max-width:560px){.h-history-tools{align-items:stretch;flex-direction:column}.h-history-tools button{width:100%}.h-history-row{gap:8px}.h-history-row .mu{font-size:11px}}\n</style>
+\n.h-history-tools{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:10px 0 14px}.h-history-tools label{min-width:220px;flex:1}.h-history-tools button{margin:0;min-height:42px}.h-history-row .mu{line-height:1.7;margin-top:3px}@media(max-width:560px){.h-history-tools{align-items:stretch;flex-direction:column}.h-history-tools button{width:100%}.h-history-row{gap:8px}.h-history-row .mu{font-size:11px}}\n
+.record-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.edit-btn{border:0;border-radius:9px;padding:8px 13px;background:#e8f3ff;color:#1764a5;font-weight:700;cursor:pointer}
+.bmf-edit-overlay{position:fixed;inset:0;z-index:99999;background:rgba(8,25,16,.58);display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}
+.bmf-edit-dialog{background:#fff;color:#183b2a;width:min(620px,100%);max-height:88vh;overflow:auto;border-radius:18px;padding:20px;box-shadow:0 18px 60px rgba(0,0,0,.25)}
+.bmf-edit-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.bmf-edit-head h2{margin:0;font-size:21px}
+.bmf-edit-close{border:0;background:#f1f4f2;border-radius:50%;width:36px;height:36px;font-size:24px;cursor:pointer}
+.bmf-edit-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.edit-field{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700}
+.edit-field input{width:100%;box-sizing:border-box;border:1px solid #d5e2da;border-radius:9px;padding:10px;font:inherit;font-weight:400;min-height:40px}
+.bmf-edit-actions{display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:#fff;padding-top:10px}
+@media(max-width:600px){.bmf-edit-fields{grid-template-columns:1fr}.bmf-edit-dialog{padding:16px}}
+
+/* Form tambah kolam: ukuran kolom dan input konsisten di desktop & mobile */
+#v .pond-entry-form .g{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:stretch;
+  gap:14px!important;
+}
+#v .pond-entry-form .g>div{min-width:0;display:flex;align-items:stretch}
+#v .pond-entry-form .g>div>label{
+  display:flex;width:100%;min-width:0;flex-direction:column;
+  justify-content:flex-end;min-height:72px;box-sizing:border-box;
+}
+#v .pond-entry-form input,
+#v .pond-entry-form select{
+  width:100%;height:46px;min-height:46px;box-sizing:border-box;
+  margin-top:7px;flex:0 0 46px;
+}
+#v .pond-entry-form button{margin-top:14px}
+@media(max-width:760px){
+  #v .pond-entry-form .g{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+  #v .pond-entry-form .g>div>label{min-height:76px;font-size:12px}
+  #v .pond-entry-form input,#v .pond-entry-form select{height:46px;min-height:46px}
+}
+@media(max-width:360px){
+  #v .pond-entry-form .g{grid-template-columns:minmax(0,1fr)!important}
+  #v .pond-entry-form .g>div>label{min-height:0}
+}
+
+/* Perbaikan ukuran tombol aksi riwayat: Edit dan Hapus */
+.record-actions{
+  display:flex!important;flex:0 0 auto!important;align-items:center!important;
+  justify-content:flex-end!important;gap:8px!important;flex-wrap:nowrap!important;
+  width:auto!important;max-width:max-content!important;
+}
+.record-actions button,
+.record-actions .edit-btn,
+.record-actions .x,
+.record-actions .tc-del{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;width:auto!important;min-width:64px!important;
+  max-width:88px!important;height:36px!important;min-height:36px!important;
+  padding:0 12px!important;margin:0!important;border-radius:9px!important;
+  font-size:13px!important;line-height:1!important;font-weight:700!important;
+  white-space:nowrap!important;box-shadow:none!important;
+}
+.record-actions .edit-btn{background:#e8f3ff!important;color:#1764a5!important}
+.record-actions .x,.record-actions .tc-del{background:var(--bdb)!important;color:var(--bd2)!important}
+.row>.record-actions{align-self:flex-start}
+@media(max-width:600px){
+ .record-actions{gap:6px!important}
+ .record-actions button,.record-actions .edit-btn,.record-actions .x,.record-actions .tc-del{
+   min-width:58px!important;max-width:76px!important;height:34px!important;min-height:34px!important;
+   padding:0 9px!important;font-size:12px!important
+ }
+}
+</style>
 <style id="bmf-professional-v3">
 /* BMF PROFESSIONAL PORTAL — refined visual system */
 #authGate.bmf-login-v2{background:#edf3ee;padding:clamp(14px,2.4vw,34px);color:#173426;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif}
@@ -2277,6 +2345,26 @@ const bio=c=>c.pop*c.abw/1000;
 function sub(e,k){e.preventDefault();if(ro)return false;const d=Object.fromEntries(new FormData(e.target));for(const x in d)if(e.target[x]?.type==='number')d[x]=d[x]===''?null:+d[x];d.id=uid();
  if(k==='feed'){d.mati=Number(d.mati||0);if(d.mati<0){alert('Angka kematian tidak boleh negatif.');return false;}}
  const m={ponds:'ponds',samp:'samp',feed:'feed',sales:'sales',water:'water',hidro:'hidro'};S[m[k]].push(d);if(k==='ponds')pid=d.id;save();render();return false}
+
+function editRecord(group,id){
+ if(ro){alert('Mode hanya baca: data tidak dapat diedit.');return}
+ const isT=group.startsWith('ternak:'),kind=isT?group.split(':')[1]:group;
+ const arr=isT?tData()[kind]:S[kind];if(!Array.isArray(arr)){alert('Data tidak ditemukan.');return}
+ const rec=arr.find(x=>String(x.id)===String(id));if(!rec){alert('Catatan tidak ditemukan.');return}
+ const labels={tgl:'Tanggal',pond:'Kolam',nama:'Nama',jenis:'Jenis',unit:'Unit/Instalasi',tanam:'Jenis tanaman',ph:'pH',tds:'TDS',ec:'EC',suhu:'Suhu',nh3:'Amonia',no2:'Nitrit',flok:'Flok',garam:'Garam (g)',kapur:'Kapur CaCO₃ (g)',antibiotik:'Antibiotik/Probiotik',molase:'Molase (g)',tinggi:'Tinggi air (cm)',warna:'Warna air',jml:'Jumlah ikan',vol:'Volume kolam',abw:'ABW (g)',pop:'Populasi',kg:'Jumlah (kg)',harga:'Harga',buyer:'Pembeli',mati:'Kematian',catatanMati:'Catatan kematian',pakan:'Pakan',jumlah:'Jumlah',bobot:'Bobot',produksi:'Produksi',catatan:'Catatan'};
+ const escV=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+ const fields=Object.keys(rec).filter(k=>k!=='id').map(k=>{const v=rec[k],type=k==='tgl'?'date':typeof v==='number'?'number':'text';return `<label class="edit-field"><span>${esc(labels[k]||k)}</span><input name="${esc(k)}" type="${type}" value="${escV(v)}" ${type==='number'?'step="any"':''}></label>`}).join('');
+ let modal=document.getElementById('bmfEditModal');if(!modal){modal=document.createElement('div');modal.id='bmfEditModal';modal.className='bmf-edit-overlay';document.body.appendChild(modal)}
+ modal.innerHTML=`<div class="bmf-edit-dialog"><div class="bmf-edit-head"><h2>Edit Data</h2><button type="button" class="bmf-edit-close" onclick="closeEditRecord()">×</button></div><p class="mu">Ubah nilai yang diperlukan, lalu simpan perubahan.</p><form onsubmit="return saveEditRecord(event,'${isT?'ternak:':''}${kind}','${escV(id)}')"><div class="bmf-edit-fields">${fields}</div><div class="bmf-edit-actions"><button type="button" class="x" onclick="closeEditRecord()">Batal</button><button type="submit" class="p">Simpan Perubahan</button></div></form></div>`;
+ modal.style.display='flex';
+}
+function closeEditRecord(){const m=document.getElementById('bmfEditModal');if(m)m.style.display='none'}
+async function saveEditRecord(e,group,id){
+ e.preventDefault();const isT=group.startsWith('ternak:'),kind=isT?group.split(':')[1]:group,arr=isT?tData()[kind]:S[kind],rec=arr&&arr.find(x=>String(x.id)===String(id));if(!rec)return false;
+ for(const [k,v] of new FormData(e.target).entries()){rec[k]=v===''?null:(typeof rec[k]==='number'?Number(v):v)}
+ try{if(isT)await tSave();else await save();closeEditRecord();render()}catch(err){alert('Perubahan belum berhasil disimpan. Periksa koneksi lalu coba lagi.')}
+ return false;
+}
 function del(k,id){if(ro||!confirm('Hapus catatan ini?'))return;S[k]=S[k].filter(x=>x.id!==id);save();render()}
 function setTab(t){tab=t;writeRoute();render()}function setPond(v){pid=v;cal={};render()}
 const opts=(sel)=>S.ponds.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.nama)}</option>`).join('');
@@ -2286,8 +2374,8 @@ const noPond='<div class="card mu">Belum ada kolam. Tambahkan dulu di tab Kolam 
 /* tampilan */
 function vTebar(){const tot=S.ponds.reduce((a,p)=>a+cur(p.id).pop,0),pk=S.feed.reduce((a,x)=>a+x.kg,0),jl=S.sales.reduce((a,x)=>a+x.kg*x.harga,0);
  return `<div class="g card"><div class="st"><i>🏞️</i><div><b>${S.ponds.length}</b><span>Kolam</span></div></div><div class="st"><i>🐟</i><div><b>${f(tot)}</b><span>Total ikan hidup setelah kematian</span></div></div><div class="st"><i>🌾</i><div><b>${f(pk)} kg</b><span>Total pakan</span></div></div><div class="st"><i>💰</i><div><b>${rp(jl)}</b><span>Total penjualan</span></div></div></div>
- <div class="card"><h2>Tambah kolam &amp; tebar</h2><form onsubmit="return sub(event,'ponds')"><div class="g">${inp('Nama kolam','nama','text','placeholder="Kolam A1"')}${inp('Volume air (m³)','vol','number','step="any" min="0"')}${inp('Tanggal tebar','tgl','date',`value="${today()}"`)}${inp('Jenis ikan','jenis','text','value="Nila merah"')}${inp('Jumlah tebar awal (ekor)','jml','number','min="1"')}${inp('Bobot rata-rata awal (g/ekor)','abw','number','step="any" min="0"')}</div><button class="p">Simpan tebar</button></form></div>
- <div class="card"><h2>Daftar kolam</h2>${S.ponds.length?S.ponds.map(p=>{const c=cur(p.id);return `<div class="row"><div><b>${esc(p.nama)}</b> · ${esc(p.jenis)}<div class="mu">Tebar ${p.tgl} (umur ${days(p.tgl)} hari) · ${f(p.vol)} m³</div><div class="mu">${f(p.jml)} ekor ditebar</div><div class="mu">${f(p.jml)} ekor × ${f(p.abw)} g = biomassa awal ${f(p.jml*p.abw/1000)} kg · padat tebar ${f(p.vol?p.jml/p.vol:0)} ekor/m³</div><div class="mu">Terkini: ${f(c.pop)} ekor, ${f(c.abw)} g, biomassa ${f(bio(c))} kg</div></div><button class="x" onclick="del('ponds','${p.id}')">Hapus</button></div>`}).join(''):'<div class="mu">Belum ada kolam.</div>'}</div>`}
+ <div class="card"><h2>Tambah kolam &amp; tebar</h2><form class="pond-entry-form" onsubmit="return sub(event,'ponds')"><div class="g">${inp('Nama kolam','nama','text','placeholder="Kolam A1"')}${inp('Volume air (m³)','vol','number','step="any" min="0"')}${inp('Tanggal tebar','tgl','date',`value="${today()}"`)}${inp('Jenis ikan','jenis','text','value="Nila merah"')}${inp('Jumlah tebar awal (ekor)','jml','number','min="1"')}${inp('Bobot rata-rata awal (g/ekor)','abw','number','step="any" min="0"')}</div><button class="p">Simpan tebar</button></form></div>
+ <div class="card"><h2>Daftar kolam</h2>${S.ponds.length?S.ponds.map(p=>{const c=cur(p.id);return `<div class="row"><div><b>${esc(p.nama)}</b> · ${esc(p.jenis)}<div class="mu">Tebar ${p.tgl} (umur ${days(p.tgl)} hari) · ${f(p.vol)} m³</div><div class="mu">${f(p.jml)} ekor ditebar</div><div class="mu">${f(p.jml)} ekor × ${f(p.abw)} g = biomassa awal ${f(p.jml*p.abw/1000)} kg · padat tebar ${f(p.vol?p.jml/p.vol:0)} ekor/m³</div><div class="mu">Terkini: ${f(c.pop)} ekor, ${f(c.abw)} g, biomassa ${f(bio(c))} kg</div></div><div class="record-actions"><button class="edit-btn" onclick="editRecord('ponds','${p.id}')">Edit</button><button class="x" onclick="del('ponds','${p.id}')">Hapus</button></div></div>`}).join(''):'<div class="mu">Belum ada kolam.</div>'}</div>`}
 
 function vGrowth(){
  if(!S.ponds.length)return noPond;
@@ -2324,7 +2412,7 @@ function vGrowth(){
  </div>
  <div class="res"><div class="mu">Perkiraan berdasarkan ADG terakhir</div><b>${harvestDays===null?'Belum dapat dihitung':harvestDays===0?'Target bobot tercapai':harvestDays+' hari lagi'}</b><div>${harvestDate==='-'?'Tambahkan minimal dua sampling dengan pertumbuhan positif untuk memperkirakan tanggal panen.':harvestDays===0?'Ikan telah mencapai target bobot.':`Perkiraan tanggal panen: ${harvestDate}`}</div></div>
  <div class="mu" style="margin-top:8px">Estimasi hanya proyeksi dari ADG terakhir; hasil aktual dipengaruhi kualitas air, kesehatan ikan, pakan, dan perubahan pertumbuhan.</div></div>
- <div class="card"><div class="hrow"><h2>Riwayat Sampling</h2><span class="bx">${samples.length} catatan</span></div>${samples.length?[...samples].reverse().map((x,i)=>{const idx=samples.findIndex(z=>z.id===x.id);const before=idx>0?samples[idx-1]:null;const d=before?Math.max(1,Math.round((new Date(x.tgl+'T00:00:00')-new Date(before.tgl+'T00:00:00'))/86400000)):0;const rate=before?(+x.abw-+before.abw)/d:null;return `<div class="row"><div><b>${x.tgl}</b><div class="mu">ABW ${f(x.abw)} g · Populasi ${f(x.pop)} ekor</div><div class="mu">ADG ${rate===null?'-':f(rate)+' g/hari'}</div></div><button class="x" onclick="del('samp','${x.id}')">Hapus</button></div>`}).join(''):'<div class="mu">Belum ada sampling.</div>'}</div>
+ <div class="card"><div class="hrow"><h2>Riwayat Sampling</h2><span class="bx">${samples.length} catatan</span></div>${samples.length?[...samples].reverse().map((x,i)=>{const idx=samples.findIndex(z=>z.id===x.id);const before=idx>0?samples[idx-1]:null;const d=before?Math.max(1,Math.round((new Date(x.tgl+'T00:00:00')-new Date(before.tgl+'T00:00:00'))/86400000)):0;const rate=before?(+x.abw-+before.abw)/d:null;return `<div class="row"><div><b>${x.tgl}</b><div class="mu">ABW ${f(x.abw)} g · Populasi ${f(x.pop)} ekor</div><div class="mu">ADG ${rate===null?'-':f(rate)+' g/hari'}</div></div><div class="record-actions"><button class="edit-btn" onclick="editRecord('samp','${x.id}')">Edit</button><button class="x" onclick="del('samp','${x.id}')">Hapus</button></div></div>`}).join(''):'<div class="mu">Belum ada sampling.</div>'}</div>
  <div class="card"><h2>Tambah Sampling</h2><form onsubmit="return sub(event,'samp')"><input type="hidden" name="pond" value="${pid}"><div class="g">${inp('Tanggal sampling','tgl','date',`value="${today()}"`)}${inp('Bobot rata-rata (g/ekor)','abw','number','step="any" min="0"')}${inp('Populasi hidup (ekor)','pop','number',`min="0" value="${c.pop}"`)}</div><button class="p">Simpan Sampling</button></form><div class="mu" style="margin-top:8px">Catat bobot rata-rata dari sampel ikan yang ditimbang dan populasi hidup aktual. Data ini memperbarui ABW, ADG, SR, grafik, serta estimasi panen.</div></div>`;
 }
 function vPakan(){if(!S.ponds.length)return noPond;if(!P(pid))pid=S.ponds[0].id;const c=cur(pid);
@@ -2340,16 +2428,16 @@ function vPakan(){if(!S.ponds.length)return noPond;if(!P(pid))pid=S.ponds[0].id;
  <div><label>Frekuensi pakan/hari<input type="number" min="1" value="${cal.freq}" oninput="cal.freq=+this.value;calc()"></label></div></div>
  <div class="res" id="res">${resHtml(bm,day)}</div><div class="mu" style="margin-top:8px">Acuan FR umum nila: &lt;5 g 8% · 5–20 g 6% · 20–50 g 4% · 50–100 g 3% · 100–250 g 2,5% · &gt;250 g 2%. Sesuaikan dengan nafsu makan, kadar protein pakan, dan kondisi air.</div></div>
  <div class="card"><h2>Sampling bobot</h2><form onsubmit="return sub(event,'samp')"><input type="hidden" name="pond" value="${pid}"><div class="g">${inp('Tanggal','tgl','date',`value="${today()}"`)}${inp('Bobot rata-rata (g)','abw','number','step="any" min="0"')}${inp('Populasi hidup (ekor)','pop','number','min="0"')}</div><button class="p">Simpan sampling</button></form>
- ${S.samp.filter(x=>x.pond===pid).sort((a,b)=>b.tgl.localeCompare(a.tgl)).slice(0,5).map(x=>`<div class="row"><div>${x.tgl} · ${f(x.abw)} g · ${f(x.pop)} ekor</div><button class="x" onclick="del('samp','${x.id}')">Hapus</button></div>`).join('')}</div>
+ ${S.samp.filter(x=>x.pond===pid).sort((a,b)=>b.tgl.localeCompare(a.tgl)).slice(0,5).map(x=>`<div class="row"><div>${x.tgl} · ${f(x.abw)} g · ${f(x.pop)} ekor</div><div class="record-actions"><button class="edit-btn" onclick="editRecord('samp','${x.id}')">Edit</button><button class="x" onclick="del('samp','${x.id}')">Hapus</button></div></div>`).join('')}</div>
  <div class="card"><h2>Catatan operasional harian</h2><form onsubmit="return sub(event,'feed')"><input type="hidden" name="pond" value="${pid}"><div class="g">${inp('Tanggal','tgl','date',`value="${today()}"`)}${inp('Pakan diberikan (kg)','kg','number','step="any" min="0"')}${inp('Angka kematian hari ini (ekor)','mati','number','min="0" value="0"')}${inp('Catatan kematian / penyebab','catatanMati','text','placeholder="Contoh: 3 ekor, diduga stres..."')}</div><button class="p">Simpan catatan harian</button></form>
  <div class="mu" style="margin-top:8px">Total pakan ${f(tp)} kg${fcr?` · perkiraan FCR ${f(fcr)}`:''}</div>
- ${fs.slice(0,30).map(x=>{const b=bio(cur(pid,x.tgl));return `<div class="row"><div><b>${x.tgl} · ${f(x.kg)} kg pakan</b><div class="mu">FR aktual ${b?f(x.kg/b*100):'-'}% dari biomassa ${f(b)} kg</div><div class="mu">Kematian: ${f(x.mati||0)} ekor · Populasi tersisa: ${f(cur(pid,x.tgl).pop)} ekor</div>${x.catatanMati?`<div class="mu">Catatan: ${esc(x.catatanMati)}</div>`:''}</div><button class="x" onclick="del('feed','${x.id}')">Hapus</button></div>`}).join('')}</div>`}
+ ${fs.slice(0,30).map(x=>{const b=bio(cur(pid,x.tgl));return `<div class="row"><div><b>${x.tgl} · ${f(x.kg)} kg pakan</b><div class="mu">FR aktual ${b?f(x.kg/b*100):'-'}% dari biomassa ${f(b)} kg</div><div class="mu">Kematian: ${f(x.mati||0)} ekor · Populasi tersisa: ${f(cur(pid,x.tgl).pop)} ekor</div>${x.catatanMati?`<div class="mu">Catatan: ${esc(x.catatanMati)}</div>`:''}</div><div class="record-actions"><button class="edit-btn" onclick="editRecord('feed','${x.id}')">Edit</button><button class="x" onclick="del('feed','${x.id}')">Hapus</button></div></div>`}).join('')}</div>`}
 const resHtml=(bm,day)=>`Biomassa <b>${f(bm)} kg</b> → pakan harian <b>${f(day)} kg</b> (${f(day*1000)} g)<div class="mu">Per pemberian (${cal.freq}×/hari): <b>${f(day/Math.max(1,cal.freq)*1000)} g</b></div>`;
 function calc(a){const bm=cal.pop*cal.abw/1000;if(a){const e=$('#fr');if(e)e.value=cal.fr}$('#res').innerHTML=resHtml(bm,bm*cal.fr/100)}
 function vJual(){if(!S.ponds.length)return noPond;const tk=S.sales.reduce((a,x)=>a+x.kg,0),tr=S.sales.reduce((a,x)=>a+x.kg*x.harga,0);
  return `<div class="g card"><div class="st"><i>📦</i><div><b>${f(tk)} kg</b><span>Total terjual</span></div></div><div class="st"><i>💰</i><div><b>${rp(tr)}</b><span>Total pendapatan</span></div></div><div class="st"><i>🏷️</i><div><b>${tk?rp(tr/tk):'-'}</b><span>Rata-rata harga/kg</span></div></div></div>
  <div class="card"><h2>Catat penjualan</h2><form onsubmit="return sub(event,'sales')"><div class="g">${pondSel('pond')}${inp('Tanggal','tgl','date',`value="${today()}"`)}${inp('Berat terjual (kg)','kg','number','step="any" min="0"')}${inp('Harga per kg (Rp)','harga','number','min="0"')}${inp('Pembeli','buyer','text')}</div><button class="p">Simpan penjualan</button></form></div>
- <div class="card"><h2>Riwayat penjualan</h2>${S.sales.length?[...S.sales].sort((a,b)=>b.tgl.localeCompare(a.tgl)).map(x=>`<div class="row"><div><b>${rp(x.kg*x.harga)}</b> · ${f(x.kg)} kg × ${rp(x.harga)}<div class="mu">${x.tgl} · ${esc(P(x.pond)?.nama||'-')} · ${esc(x.buyer)}</div></div><button class="x" onclick="del('sales','${x.id}')">Hapus</button></div>`).join(''):'<div class="mu">Belum ada penjualan.</div>'}</div>`}
+ <div class="card"><h2>Riwayat penjualan</h2>${S.sales.length?[...S.sales].sort((a,b)=>b.tgl.localeCompare(a.tgl)).map(x=>`<div class="row"><div><b>${rp(x.kg*x.harga)}</b> · ${f(x.kg)} kg × ${rp(x.harga)}<div class="mu">${x.tgl} · ${esc(P(x.pond)?.nama||'-')} · ${esc(x.buyer)}</div></div><div class="record-actions"><button class="edit-btn" onclick="editRecord('sales','${x.id}')">Edit</button><button class="x" onclick="del('sales','${x.id}')">Hapus</button></div></div>`).join(''):'<div class="mu">Belum ada penjualan.</div>'}</div>`}
 const RULE={suhu:[['Suhu (°C)',v=>v>=26&&v<=32?0:v>=24&&v<=34?1:2]],ph:[['pH',v=>v>=6.5&&v<=8.5?0:v>=6&&v<=9?1:2]],nh3:[['Amonia TAN (mg/L)',v=>v<1?0:v<=2?1:2]],no2:[['Nitrit (mg/L)',v=>v<1?0:v<=3?1:2]],flok:[['Flok (mL/L)',v=>v>=5&&v<=30?0:v<=50?1:2]]};
 const cls=['ok','wn','bad'];
 const badges=w=>Object.keys(RULE).map(k=>`<span class="bx ${cls[RULE[k][0][1](w[k])]}">${RULE[k][0][0].split(' ')[0]} ${f(w[k])}</span>`).join('');
@@ -2357,7 +2445,7 @@ function vAir(){if(!S.ponds.length)return noPond;
  const extra=[['garam','Garam (g)','number'],['kapur','Kapur CaCO₃ (g)','number'],['antibiotik','Antibiotik / Probiotik','text'],['molase','Molase (g)','number'],['tinggi','Tinggi air (cm)','number'],['warna','Warna air','text']];
  return `<div class="card"><h2>Catat parameter &amp; perawatan air</h2><form onsubmit="return sub(event,'water')"><div class="g">${pondSel('pond')}${inp('Tanggal','tgl','date',`value="${today()}"`)}${Object.keys(RULE).map(k=>inp(RULE[k][0][0],k,'number','step="any"')).join('')}${extra.map(([k,l,t])=>inp(l,k,t,t==='number'?'step="any" min="0"':'placeholder="Isi jenis / keterangan"')).join('')}</div><button class="p">Simpan catatan air</button></form>
  <div class="mu" style="margin-top:8px">Catat kualitas air dan tindakan perawatan dalam satu rekaman: suhu, pH, amonia, nitrit, flok, garam, kapur CaCO₃, antibiotik/probiotik, molase, tinggi air, dan warna air.</div></div>
- <div class="card"><h2>Riwayat parameter &amp; perawatan</h2>${S.water.length?[...S.water].sort((a,b)=>b.tgl.localeCompare(a.tgl)).map(w=>`<div class="row"><div><b>${esc(P(w.pond)?.nama||'-')} · ${w.tgl}</b><div>${badges(w)}</div><div class="mu">Garam: ${w.garam==null?'-':f(w.garam)+' g'} · Kapur CaCO₃: ${w.kapur==null?'-':f(w.kapur)+' g'}</div><div class="mu">Antibiotik/Probiotik: ${esc(w.antibiotik||'-')} · Molase: ${w.molase==null?'-':f(w.molase)+' g'}</div><div class="mu">Flok: ${w.flok==null?'-':f(w.flok)+' mL/L'} · Tinggi air: ${w.tinggi==null?'-':f(w.tinggi)+' cm'} · Warna: ${esc(w.warna||'-')}</div></div><button class="x" onclick="del('water','${w.id}')">Hapus</button></div>`).join(''):'<div class="mu">Belum ada data.</div>'}</div>`}
+ <div class="card"><h2>Riwayat parameter &amp; perawatan</h2>${S.water.length?[...S.water].sort((a,b)=>b.tgl.localeCompare(a.tgl)).map(w=>`<div class="row"><div><b>${esc(P(w.pond)?.nama||'-')} · ${w.tgl}</b><div>${badges(w)}</div><div class="mu">Garam: ${w.garam==null?'-':f(w.garam)+' g'} · Kapur CaCO₃: ${w.kapur==null?'-':f(w.kapur)+' g'}</div><div class="mu">Antibiotik/Probiotik: ${esc(w.antibiotik||'-')} · Molase: ${w.molase==null?'-':f(w.molase)+' g'}</div><div class="mu">Flok: ${w.flok==null?'-':f(w.flok)+' mL/L'} · Tinggi air: ${w.tinggi==null?'-':f(w.tinggi)+' cm'} · Warna: ${esc(w.warna||'-')}</div></div><div class="record-actions"><button class="edit-btn" onclick="editRecord('water','${w.id}')">Edit</button><button class="x" onclick="del('water','${w.id}')">Hapus</button></div></div>`).join(''):'<div class="mu">Belum ada data.</div>'}</div>`}
 const PAL=['#1B7F4B','#E07A1F','#7B5BD6','#D64545','#2E9E5B','#C79A00'],dm=d=>d.slice(8)+'/'+d.slice(5,7);
 const PM=[['ph','pH'],['suhu','Suhu'],['nh3','Amonia'],['no2','Nitrit'],['flok','Flok']],RANGE={suhu:[26,32],ph:[6.5,8.5],nh3:[null,1],no2:[null,1],flok:[5,30]};
 const HP={ph:{n:'pH',u:'',lo:5.5,hi:6.5,ic:'drop'},tds:{n:'TDS',u:' ppm',lo:700,hi:1400,ic:'db'},ec:{n:'EC',u:' mS/cm',lo:1.2,hi:2,ic:'bolt'},suhu:{n:'Suhu Air',u:' \u00b0C',lo:24,hi:28,ic:'therm'}};
@@ -2489,7 +2577,7 @@ function hHistory(){
  const rows=[...(S.hidro||[])].sort((a,b)=>String(b.tgl||'').localeCompare(String(a.tgl||'')));
  return `<div class="card h-history"><div class="hrow"><h2>Riwayat Pencatatan Hidroponik</h2><span class="bx ok">${rows.length} catatan</span></div>
  <div class="h-history-tools"><label>Hapus catatan sebelum tanggal<input id="hHistoryBefore" type="date"></label><button type="button" class="x" onclick="hDeleteOlder()">Hapus Riwayat Lama</button></div>
- ${rows.length?rows.map(x=>`<div class="row h-history-row"><div><b>${esc(x.unit||'Instalasi')}</b> · ${esc(x.tgl||'-')}<div class="mu">${esc(x.tanam||'')} · pH ${hv('ph',x.ph)} · TDS ${hv('tds',x.tds)} ppm · EC ${hv('ec',x.ec)} mS/cm · Suhu ${hv('suhu',x.suhu)} °C</div></div><button type="button" class="x" onclick="hDeleteRecord('${String(x.id).replace(/'/g,'&#39;')}')">Hapus</button></div>`).join(''):'<div class="mu">Belum ada riwayat pencatatan.</div>'}
+ ${rows.length?rows.map(x=>`<div class="row h-history-row"><div><b>${esc(x.unit||'Instalasi')}</b> · ${esc(x.tgl||'-')}<div class="mu">${esc(x.tanam||'')} · pH ${hv('ph',x.ph)} · TDS ${hv('tds',x.tds)} ppm · EC ${hv('ec',x.ec)} mS/cm · Suhu ${hv('suhu',x.suhu)} °C</div></div><div class="record-actions"><button type="button" class="edit-btn" onclick="editRecord('hidro','${String(x.id).replace(/'/g,'&#39;')}')">Edit</button><button type="button" class="x" onclick="hDeleteRecord('${String(x.id).replace(/'/g,'&#39;')}')">Hapus</button></div></div>`).join(''):'<div class="mu">Belum ada riwayat pencatatan.</div>'}
  <div class="mu" style="margin-top:8px">Penghapusan tersimpan ke akun kamu dan akan memengaruhi grafik serta ringkasan kualitas air.</div></div>`;
 }
 function hAir(){const c=hCur(),us=hUnits(),k=ch.hp,ser=us.map((u,i)=>({n:u,c:PAL[i%6],pts:S.hidro.filter(x=>x.unit===u&&x[k]!=null&&x[k]!==''&&days(x.tgl)<hd).map(x=>[x.tgl,+x[k]])}));
@@ -3118,7 +3206,7 @@ function tDelete(kind,id){if(!confirm('Hapus catatan ini?'))return;const a=tData
 function tSelectKandang(){return tData().kandang.map(k=>`<option value="${esc(k.id)}">${esc(k.nama)} — ${esc(k.jenis)}</option>`).join('')}
 function tCard(label,value,icon,sub=''){return `<div class="tc-stat"><span>${icon}</span><div><small>${label}</small><strong>${value}</strong>${sub?`<em>${sub}</em>`:''}</div></div>`}
 function tEmpty(text){return `<div class="tc-empty">${text}</div>`}
-function tTable(rows,cols,kind){if(!rows.length)return tEmpty('Belum ada catatan. Tambahkan data melalui formulir di atas.');return `<div class="tc-table-wrap"><table class="tc-table"><thead><tr>${cols.map(c=>`<th>${c[1]}</th>`).join('')}<th>Aksi</th></tr></thead><tbody>${rows.slice().reverse().map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c[0]]??'—')}</td>`).join('')}<td><button class="tc-del" onclick="tDelete('${kind}','${r.id}')">Hapus</button></td></tr>`).join('')}</tbody></table></div>`}
+function tTable(rows,cols,kind){if(!rows.length)return tEmpty('Belum ada catatan. Tambahkan data melalui formulir di atas.');return `<div class="tc-table-wrap"><table class="tc-table"><thead><tr>${cols.map(c=>`<th>${c[1]}</th>`).join('')}<th>Aksi</th></tr></thead><tbody>${rows.slice().reverse().map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c[0]]??'—')}</td>`).join('')}<td><div class="record-actions"><button class="edit-btn" onclick="editRecord('ternak:${kind}','${r.id}')">Edit</button><button class="tc-del" onclick="tDelete('${kind}','${r.id}')">Hapus</button></div></td></tr>`).join('')}</tbody></table></div>`}
 function tForm(title,kind,fields,button='Simpan Data'){
  return `<section class="tc-panel"><h3>${title}</h3><form class="tc-form" onsubmit="return tAdd('${kind}',this)">${fields.map(f=>`<label>${f.label}${f.required===false?'':' *'}${f.type==='select'?`<select name="${f.name}" ${f.required===false?'':'required'}>${f.options}</select>`:`<input name="${f.name}" type="${f.type||'text'}" ${f.placeholder?`placeholder="${f.placeholder}"`:''} ${f.required===false?'':'required'} ${f.min!==undefined?`min="${f.min}"`:''} ${f.step?`step="${f.step}"`:''} ${f.value?`value="${f.value}"`:''}>`}</label>`).join('')}<button class="tc-submit" type="submit">＋ ${button}</button></form></section>`;
 }
